@@ -1,50 +1,44 @@
--- Değişkenler
 local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
+local playerGui = player:FindFirstChild("PlayerGui") or Instance.new("PlayerGui", player)
+local screenGui = Instance.new("ScreenGui", playerGui)
 
--- Menü Çerçevesi (Dark Tema)
+-- Ana Menü Çerçevesi (Ortalanmış, Büyük)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 150)  -- Menü boyutları
-frame.Position = UDim2.new(0, 20, 0, 20)  -- Sol üstte
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)  -- Dark tema
-frame.BackgroundTransparency = 0.8
+frame.Size = UDim2.new(0.5, 0, 0.6, 0) -- %50 genişlik, %60 yükseklik
+frame.Position = UDim2.new(0.25, 0, 0.2, 0) -- Tam ortalama
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Dark tema
+frame.BorderSizePixel = 0
 frame.Parent = screenGui
-frame.Visible = true  -- Başlangıçta menü görünür
 
--- Menü Başlığı (Bytesman HUB)
+-- Başlık (Bytesman HUB + Monster İkonu)
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(0, 220, 0, 50)
-titleLabel.Position = UDim2.new(0, 15, 0, 10)
-titleLabel.Text = "Bytesman HUB"
+titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.Text = "📛 Bytesman HUB"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 24
+titleLabel.TextSize = 28
+titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.BackgroundTransparency = 1
 titleLabel.Parent = frame
 
--- Monster İkonu (Yanında)
-local monsterIcon = Instance.new("ImageLabel")
-monsterIcon.Size = UDim2.new(0, 30, 0, 30)
-monsterIcon.Position = UDim2.new(0, 180, 0, 15)
-monsterIcon.Image = "rbxassetid://10012125913"  -- Monster ikonu için Roblox Asset ID
-monsterIcon.BackgroundTransparency = 1
-monsterIcon.Parent = frame
-
--- Menü Açma/Kapama Butonu
+-- Menü Aç/Kapat Butonu ("-" ve "+")
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 100, 0, 40)
-toggleButton.Position = UDim2.new(0, 15, 0, 70)
-toggleButton.Text = "Aç/Kapat"
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(1, -55, 0, 5) -- Sağ üst köşe
+toggleButton.Text = "-"
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 toggleButton.Parent = frame
 
--- Menü Açma/Kapama Fonksiyonu
-local menuVisible = true
-local function toggleMenu()
-    menuVisible = not menuVisible
-    frame.Visible = menuVisible
-end
+local isMinimized = false -- Menü küçültme durumu
 
--- Menü açma/kapama butonuna tıklanıldığında menüyü göster veya gizle
-toggleButton.MouseButton1Click:Connect(toggleMenu)
+toggleButton.MouseButton1Click:Connect(function()
+    if isMinimized then
+        frame:TweenSize(UDim2.new(0.5, 0, 0.6, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.5, true)
+        toggleButton.Text = "-"
+    else
+        frame:TweenSize(UDim2.new(0.5, 0, 0.05, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.5, true)
+        toggleButton.Text = "+"
+    end
+    isMinimized = not isMinimized
+end)
