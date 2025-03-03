@@ -1,89 +1,75 @@
--- Roblox Studio'da LocalScript içinde kullanın
-
--- Menü öğelerini oluştur
 local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player:WaitForChild("PlayerGui")
+local screenGui = script.Parent
+local menu = screenGui:WaitForChild("BytesHUB")
+local inputBox = menu:WaitForChild("InputBox")
+local teleportButton = menu:WaitForChild("TeleportButton")
+local closeButton = menu:WaitForChild("CloseButton")
+local minimizeButton = menu:WaitForChild("MinimizeButton")
+local maximizeButton = menu:WaitForChild("MaximizeButton")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 300)
-frame.Position = UDim2.new(0, 10, 0, 50)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark tema
-frame.Parent = screenGui
-frame.ClipsDescendants = true  -- İçeriğin taşmasını engelle
+local menuSize = 300 -- Başlangıç menü boyutu
+local minimized = false -- Menü küçük mü?
+local isOpen = true -- Menü açık mı?
 
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.Text = "BytesHUB"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextSize = 24
-titleLabel.TextAlign = Enum.TextAlign.Center
-titleLabel.Parent = frame
-
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 40, 0, 40)
-toggleButton.Position = UDim2.new(1, -50, 0, 10)  -- Sağ üstte olacak
-toggleButton.Text = "+"
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.TextSize = 30
-toggleButton.Parent = frame
-
--- Menü içeriği
-local menuContent = Instance.new("Frame")
-menuContent.Size = UDim2.new(1, 0, 1, -40)  -- Menü içeriği
-menuContent.Position = UDim2.new(0, 0, 0, 40)
-menuContent.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-menuContent.Visible = false  -- Başlangıçta gizli
-menuContent.Parent = frame
-
--- Menü içerisine örnek bir etkileşim ekleyelim
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1, 0, 0, 60)
-label.Text = "Örnek Menü Elemanı"
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.BackgroundTransparency = 1
-label.TextSize = 20
-label.TextAlign = Enum.TextAlign.Center
-label.Parent = menuContent
-
--- Menü açma/kapatma işlevselliği
-local menuOpen = false
-toggleButton.MouseButton1Click:Connect(function()
-    menuOpen = not menuOpen
-    if menuOpen then
-        menuContent.Visible = true
-        toggleButton.Text = "-"
+-- Menü boyutlandırma (küçültme ve büyütme)
+minimizeButton.MouseButton1Click:Connect(function()
+    if not minimized then
+        menu.Size = UDim2.new(0, menuSize, 0, 50) -- Küçült
+        minimized = true
     else
-        menuContent.Visible = false
-        toggleButton.Text = "+"
+        menu.Size = UDim2.new(0, menuSize, 0, menuSize) -- Büyüt
+        minimized = false
     end
 end)
 
--- Menü taşınabilir hale getirme
-local dragging = false
-local dragStart = nil
-local startPos = nil
+-- Menü açma/kapama
+closeButton.MouseButton1Click:Connect(function()
+    if isOpen then
+        menu.Visible = false
+        isOpen = false
+    else
+        menu.Visible = true
+        isOpen = true
+    end
+end)
 
-frame.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+-- Teleport işlevi
+teleportButton.MouseButton1Click:Connect(function()
+    local targetName = inputBox.Text
+    local targetPlayer = game.Players:FindFirstChild(targetName) -- İsimle oyuncuyu bul
+    
+    if targetPlayer then
+        -- Hedef oyuncu bulunduysa, kendini ona teleporte et
+        player.Character:WaitForChild("HumanoidRootPart").CFrame = targetPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    else
+        -- Eğer oyuncu bulunamazsa, bir uyarı verebiliriz (opsiyonel)
+        print("Bu isimde bir oyuncu bulunamadı!")
+    end
+end)
+
+-- Menü hareket ettirme
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+menu.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = frame.Position
+        startPos = menu.Position
     end
 end)
 
-frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-frame.InputChanged:Connect(function(input)
+menu.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        menu.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+menu.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
 end)
